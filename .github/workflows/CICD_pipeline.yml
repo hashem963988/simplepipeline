@@ -194,7 +194,7 @@ jobs:
         run: echo "deploy $TAG to production...🚀"
 
   notification:
-    needs: [deploy]
+    needs: [production]
     runs-on: ubuntu-latest
     steps:
       - name: notification
