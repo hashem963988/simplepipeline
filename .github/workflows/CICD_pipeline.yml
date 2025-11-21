@@ -37,7 +37,7 @@ jobs:
         # the output of the script should returns "Hello, World!" so we can grep it to check
         run: python hello.py | grep -i "hello" || exit 1
 
-      - name: summary
+      - name: show summary
         run: |
           {
             echo '## Code Linting Summary 📈'
@@ -73,12 +73,13 @@ jobs:
 
       - name: build and push
         run: |
+          docker buildx build --push -t ghcr.io/${{ github.repository }}:$TAG .
           docker buildx build --push -t ghcr.io/${{ github.repository }}:latest .
 
-      - name: summary
+      - name: show summary
         run: |
           {
-            echo '## Docker Build Summary 🚢'
+            echo '## Docker Build Summary $TAG 🚢'
             echo ''
             echo '- ✅ Docker image building & pushing is passed'
             echo ''
@@ -132,7 +133,7 @@ jobs:
     environment: production
     steps:
       - name: deploy
-        run: echo "deploy to production...🚀"
+        run: echo "deploy $TAG to production...🚀"
 
   notification:
     needs: [deploy]
