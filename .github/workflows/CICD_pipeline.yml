@@ -79,7 +79,7 @@ jobs:
           # Get the short SHA of the commit
           SHORT_SHA=${GITHUB_SHA:0:7}
           if [ ${{ github.event_name }} != 'release' ]; then
-            docker buildx build --push -t ghcr.io/${{ github.repository }}:$SHORT_SHA
+            docker buildx build --push -t ghcr.io/${{ github.repository }}:$SHORT_SHA .
           else
             docker buildx build --push -t ghcr.io/${{ github.repository }}:$TAG .
             docker buildx build --push -t ghcr.io/${{ github.repository }}:latest .
