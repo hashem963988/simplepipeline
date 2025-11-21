@@ -25,13 +25,27 @@ jobs:
 
       - name: lint the code
         run: |
-          flake8 hello.py --exit-zero || true # disable flake8 fast-fail
+          flake8 hello.py --exit-zero >> flake8_output.txt
           pylint hello.py
         continue-on-error: true
       
       - name: test the script
         # the output of the script should returns "Hello, World!" so we can grep it to check
         run: python hello.py | grep -i "hello" || exit 1
+
+      - name: summary
+        run: |
+          {
+            echo '## Summary 📈'
+            echo ''
+            echo '- ✅ Linting check is passed'
+            echo ''
+            echo "---"
+            echo 'flake8 results:'
+            echo '```'
+            echo "$(cat flake8_output.txt)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
   
   build-and-push:
     needs: [lint-and-test]
@@ -53,19 +67,19 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
-      # - name: build and push with buildx
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: .
-      #     push: true
-      #     platforms: amd64, arm64
-      #     tags: "latest"
 
       - name: build and push
         run: |
           docker buildx build --push -t ghcr.io/${{ github.repository }}:latest .
 
+      - name: summary
+        run: |
+          {
+            echo '## Summary 📈'
+            echo ''
+            echo 'To pull the docker image use:'
+            echo "docker pull ghcr.io/${{ github.repository }}:latest"
+          } >> "$GITHUB_STEP_SUMMARY"
 
 
   test-docker-image:
@@ -94,3 +108,10 @@ jobs:
     steps:
       - name: deploy
         run: echo "deploy to production..."
+
+  notification:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: notification
+        run: echo send notification to slack
