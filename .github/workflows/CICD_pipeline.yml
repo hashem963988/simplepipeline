@@ -41,7 +41,7 @@ jobs:
             echo '- ✅ Linting check is passed'
             echo ''
             echo "---"
-            echo 'flake8 results (insights):'
+            echo '#### flake8 results (insights):'
             echo '```'
             echo "$(cat flake8_output.txt)"
             echo '```'
@@ -75,7 +75,7 @@ jobs:
       - name: summary
         run: |
           {
-            echo '## Docker Build Summary 📈'
+            echo '## Docker Build Summary 🚢'
             echo ''
             echo '#### To pull the docker image use:'
             echo '```bash'
@@ -109,7 +109,7 @@ jobs:
     environment: production
     steps:
       - name: deploy
-        run: echo "deploy to production..."
+        run: echo "deploy to production...🚀"
 
   notification:
     needs: [deploy]
