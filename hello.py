@@ -10,3 +10,4 @@ def hello():
 
 # Call the function
 hello()
+
