@@ -115,11 +115,9 @@ jobs:
           name: test_results
           path: test_results.txt
 
-
-  deploy:
+  ask-for-approval:
     needs: [test-docker-image]
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - name: send notification to infrom that we need an approval to continue
         run: |
@@ -127,6 +125,12 @@ jobs:
           --data "{"text":\"$(echo "project [simplepipeline $TAG] CI/CD pipeline needs to review before deploy to production 📢")\"}" \
           ${{ secrets.SLACK_WEBHOOK_URL }}
 
+
+  deploy:
+    needs: [test-docker-image]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
       - name: deploy
         run: echo "deploy to production...🚀"
 
