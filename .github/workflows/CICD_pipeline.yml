@@ -79,18 +79,15 @@ jobs:
 
           # add the latest image to the release artifacts:
           if [ ${{ github.event_name }} == 'release' ]; then
-            docker pull ghcr.io/${{ github.repository }}:latest
-            docker save ghcr.io/${{ github.repository }}:latest -o image-latest.tar
+            docker pull ghcr.io/${{ github.repository }}:$TAG
+            docker save ghcr.io/${{ github.repository }}:$TAG -o docker-image-$TAG.tar
           fi
-      - name: upload docker image to release artifacts
+      - name: cache docker image tar file for the next job
         if: github.event_name == 'release'
-        uses: actions/upload-release-asset@v1
+        uses: actions/cache@v2
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: image-latest.tar
-          asset_name: image-latest.tar
-          asset_content_type: application/octet-stream
-
+          path: docker-image-$TAG.tar
+          key: ${{ runner.os }}-cache-${{ github.sha }}
 
       - name: show summary
         run: |
@@ -105,6 +102,26 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+
+  update-releaes-artifacts:
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    steps:
+      - name: get the image tar file from the cache
+        if: github.event_name == 'release'
+        uses: actions/cache@v2
+        with:
+          path: docker-image-$TAG.tar
+          key: ${{ runner.os }}-cache-${{ github.sha }}
+
+      - name: upload docker image to release artifacts
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: docker-image-$TAG.tar
+          asset_name: docker-image-$TAG.tar
+          asset_content_type: application/octet-stream
 
 
   test-docker-image:
