@@ -200,6 +200,7 @@ jobs:
 
   notification:
     needs: [production]
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: notification
