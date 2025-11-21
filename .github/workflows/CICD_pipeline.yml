@@ -100,7 +100,14 @@ jobs:
         run: docker pull ghcr.io/${{ github.repository }}:latest
 
       - name: run a container and apply a test command against it (remember CMD in the Dockerfile invokes the script at start)
-        run: docker run --rm ghcr.io/${{ github.repository }}:latest | grep -i "hello" || exit 1
+        run: docker run --rm ghcr.io/${{ github.repository }}:latest | grep -i "hello" > test_results.txt || exit 1
+
+      - name: artifacting test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_results
+          path: test_results.txt
+
 
   deploy:
     needs: [test-docker-image]
