@@ -187,7 +187,9 @@ jobs:
     environment: staging
     steps:
       - name: deploy
-        run: echo "deploy $SHORT_SHA to staging...🚀"
+        run: |
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          echo "deploy $SHORT_SHA to staging...🚀"
 
 
   production:
