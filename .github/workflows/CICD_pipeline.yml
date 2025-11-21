@@ -1,12 +1,16 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - main
-      - dev
+  # push:
+  #   branches:
+  #     - main
+  #     - dev
+  release:
+    types: [created]
   workflow_dispatch:
 
+env:
+  TAG: ${{ github.event.release.tag_name }}
 
 jobs:
   lint-and-test:
@@ -127,5 +131,5 @@ jobs:
       - name: notification
         run: |
           curl -X POST -H 'Content-type: application/json' \
-          --data "{"text":\"$(echo "project [simplepipeline] has been deployed to production 🚀")\"}" \
+          --data "{"text":\"$(echo "project [simplepipeline $TAG] has been deployed to production 🚀")\"}" \
           ${{ secrets.SLACK_WEBHOOK_URL }}
