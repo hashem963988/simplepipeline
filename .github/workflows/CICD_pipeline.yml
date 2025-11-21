@@ -1,10 +1,11 @@
 name: CI/CD Pipeline
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #     - dev
+  push:
+    branches:
+      # - main
+      # - dev
+      - release/v*
   release:
     types: [created]
   workflow_dispatch:
