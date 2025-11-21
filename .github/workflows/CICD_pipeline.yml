@@ -80,9 +80,6 @@ jobs:
 
           # add the latest image to the release artifacts:
           if [ ${{ github.event_name }} == 'release' ]; then
-            # set the image name:
-            echo "IMAGE_TAR=image-${TAG}.tar" >> $GITHUB_ENV
-
             # create the tar file of the image
             docker pull ghcr.io/${{ github.repository }}:$TAG
             docker save ghcr.io/${{ github.repository }}:$TAG -o docker-image-$TAG.tar
@@ -92,7 +89,7 @@ jobs:
         if: github.event_name == 'release'
         uses: actions/cache@v4
         with:
-          path: ${{ env.IMAGE_TAR }}
+          path: ./docker-image-${{ github.event.release.tag_name }}.tar
           key: ${{ runner.os }}-cache-${{ github.sha }}
 
       - name: show summary
@@ -120,7 +117,7 @@ jobs:
         if: github.event_name == 'release'
         uses: actions/cache@v4
         with:
-          path: ${{ env.IMAGE_TAR }}
+          path: ./docker-image-${{ github.event.release.tag_name }}.tar
           key: ${{ runner.os }}-cache-${{ github.sha }}
 
       - name: upload docker image to release artifacts
@@ -128,8 +125,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ env.IMAGE_TAR }}
-          asset_name: ${{ env.IMAGE_TAR }}
+          asset_path: docker-image-${{ github.event.release.tag_name }}.tar
+          asset_name: docker-image-${{ github.event.release.tag_name }}.tar
           asset_content_type: application/octet-stream
 
 
