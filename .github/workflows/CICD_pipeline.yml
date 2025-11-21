@@ -172,6 +172,7 @@ jobs:
 
   ask-for-approval:
     needs: [test-docker-image]
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: send notification to infrom that we need an approval to continue
@@ -200,7 +201,6 @@ jobs:
 
   notification:
     needs: [production]
-    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: notification
