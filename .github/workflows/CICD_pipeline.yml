@@ -157,7 +157,7 @@ jobs:
       - name: run a container and apply a test command against it (remember CMD in the Dockerfile invokes the script at start)
         run: |
           SHORT_SHA=${GITHUB_SHA:0:7}
-          
+
           if [ ${{ github.event_name }} != "release" ]; then
             docker run --rm ghcr.io/${{ github.repository }}:$SHORT_SHA | grep -i "hello" > test_results.txt || exit 1
           else
@@ -191,6 +191,7 @@ jobs:
 
   production:
     needs: [test-docker-image]
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -199,6 +200,7 @@ jobs:
 
   notification:
     needs: [production]
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: notification
