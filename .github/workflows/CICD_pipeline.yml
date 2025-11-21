@@ -77,7 +77,7 @@ jobs:
           {
             echo '## Docker Build Summary 📈'
             echo ''
-            echo 'To pull the docker image use:'
+            echo '#### To pull the docker image use:'
             echo "docker pull ghcr.io/${{ github.repository }}:latest"
           } >> "$GITHUB_STEP_SUMMARY"
 
