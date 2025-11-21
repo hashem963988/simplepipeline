@@ -80,7 +80,7 @@ jobs:
       - name: show summary
         run: |
           {
-            echo '## Docker Build Summary $TAG 🚢'
+            echo "## Docker Build Summary $TAG 🚢"
             echo ''
             echo '- ✅ Docker image building & pushing is passed'
             echo ''
