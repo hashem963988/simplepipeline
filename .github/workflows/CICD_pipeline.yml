@@ -64,9 +64,9 @@ jobs:
 
       - name: build and push
         run: |
-          docker buildx build -t ghcr.io/${{ github.repository }}/image:latest
-          docker push ghcr.io/${{ github.repository }}/image:latest
-          docker rmi ghcr.io/${{ github.repository }}/image:latest
+          docker buildx build -t ghcr.io/${{ github.repository }}:latest
+          docker push ghcr.io/${{ github.repository }}:latest
+          docker rmi ghcr.io/${{ github.repository }}:latest
 
 
   test-docker-image:
@@ -83,10 +83,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: pull the image to create a container from it
-        run: docker pull ghcr.io/${{ github.repository }}/image:latest
+        run: docker pull ghcr.io/${{ github.repository }}:latest
 
       - name: run a container and apply a test command against it (remember CMD in the Dockerfile invokes the script at start)
-        run: docker run --rm ghcr.io/${{ github.repository }}/image:latest | grep -i "hello" || exit 1
+        run: docker run --rm ghcr.io/${{ github.repository }}:latest | grep -i "hello" || exit 1
 
   deploy:
     needs: [test-docker-image]
