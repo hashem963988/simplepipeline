@@ -147,7 +147,7 @@ jobs:
       - name: pull the image to create a container from it
         run: |
           SHORT_SHA=${GITHUB_SHA:0:7}
-          
+
           if [ ${{ github.event_name }} != "release" ]; then
             docker pull ghcr.io/${{ github.repository }}:$SHORT_SHA
           else
@@ -156,6 +156,8 @@ jobs:
 
       - name: run a container and apply a test command against it (remember CMD in the Dockerfile invokes the script at start)
         run: |
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          
           if [ ${{ github.event_name }} != "release" ]; then
             docker run --rm ghcr.io/${{ github.repository }}:$SHORT_SHA | grep -i "hello" > test_results.txt || exit 1
           else
