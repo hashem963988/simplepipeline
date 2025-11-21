@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      # - dev
+      - dev
       - release/v*
   release:
     types: [created]
@@ -14,7 +14,8 @@ permissions:
   contents: write
 
 env:
-  TAG: ${{ github.event.release.tag_name }}
+  GITHUB_SHA: ${{ github.sha }} # full sha (in case of push to dev or release)
+  TAG: ${{ github.event.release.tag_name }} # tag (in case of release only)
 
 jobs:
   lint-and-test:
@@ -75,11 +76,14 @@ jobs:
 
       - name: build and push
         run: |
-          docker buildx build --push -t ghcr.io/${{ github.repository }}:$TAG .
-          docker buildx build --push -t ghcr.io/${{ github.repository }}:latest .
-
-          # add the latest image to the release artifacts:
-          if [ ${{ github.event_name }} == 'release' ]; then
+          # Get the short SHA of the commit
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          if [ ${{ github.event_name }} != 'release' ]; then
+            docker buildx build --push -t ghcr.io/${{ github.repository }}:$SHORT_SHA
+          else
+            docker buildx build --push -t ghcr.io/${{ github.repository }}:$TAG .
+            docker buildx build --push -t ghcr.io/${{ github.repository }}:latest .
+            # add the latest image to the release artifacts:
             # create the tar file of the image
             docker pull ghcr.io/${{ github.repository }}:$TAG
             docker save ghcr.io/${{ github.repository }}:$TAG -o docker-image-$TAG.tar
@@ -141,10 +145,20 @@ jobs:
           password: ${{ secrets.PAT }}
       
       - name: pull the image to create a container from it
-        run: docker pull ghcr.io/${{ github.repository }}:latest
+        run: |
+          if [ ${{ github.event_name }} != 'release' ]; then
+            docker pull ghcr.io/${{ github.repository }}:$SHORT_SHA
+          else
+            docker pull ghcr.io/${{ github.repository }}:$TAG
+          fi
 
       - name: run a container and apply a test command against it (remember CMD in the Dockerfile invokes the script at start)
-        run: docker run --rm ghcr.io/${{ github.repository }}:latest | grep -i "hello" > test_results.txt || exit 1
+        run: |
+          if [ ${{ github.event_name }} != 'release' ]; then
+            docker run --rm ghcr.io/${{ github.repository }}:$SHORT_SHA | grep -i "hello" > test_results.txt || exit 1
+          else
+            docker run --rm ghcr.io/${{ github.repository }}:$TAG | grep -i "hello" > test_results.txt || exit 1
+          fi
 
       - name: artifacting test results
         uses: actions/upload-artifact@v4
@@ -162,8 +176,16 @@ jobs:
           --data "{"text":\"$(echo "project [simplepipeline $TAG] CI/CD pipeline needs to review before deploy to production 📢")\"}" \
           ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  staging:
+    needs: [test-docker-image]
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: deploy
+        run: echo "deploy $SHORT_SHA to staging...🚀"
 
-  deploy:
+
+  production:
     needs: [test-docker-image]
     runs-on: ubuntu-latest
     environment: production
