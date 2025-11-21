@@ -60,7 +60,7 @@ jobs:
           push: true
           platforms: amd64, arm64
           tags: ["latest"]
-          labels: ["hashem", "${{ github.repository }}"]
+
 
   test-docker-image:
     needs: [build-and-push]
