@@ -187,11 +187,13 @@ jobs:
     environment: staging
     steps:
       - name: deploy
-        run: echo "deploy $SHORT_SHA to staging...🚀"
+        run: |
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          echo "deploy $SHORT_SHA to staging...🚀"
 
 
   production:
-    needs: [test-docker-image]
+    needs: [ask-for-approval]
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     environment: production
