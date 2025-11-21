@@ -3,7 +3,6 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      # - main
       # - dev
       - release/v*
   release:
@@ -57,9 +56,6 @@ jobs:
   
   build-and-push:
     needs: [lint-and-test]
-    # permissions:
-    #   packages: write
-    #   contents: write # needed for push to release artifacts
     name: build/push docker image
     runs-on: ubuntu-latest
     steps:
@@ -111,9 +107,6 @@ jobs:
 
 
   update-releaes-artifacts:
-    # permissions:
-    #   packages: write
-    #   contents: write # needed for push to release artifacts
     needs: [build-and-push]
     runs-on: ubuntu-latest
     steps:
@@ -137,9 +130,6 @@ jobs:
 
   test-docker-image:
     needs: [build-and-push]
-    # permissions:
-    #   packages: read
-    #   contents: read
     runs-on: ubuntu-latest
     steps:
       - name: login to Docker registry
