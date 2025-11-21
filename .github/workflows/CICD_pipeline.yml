@@ -56,7 +56,7 @@ jobs:
     permissions:
       packages: write
       contents: write # needed for push to release artifacts
-    name: build and push docker image
+    name: build/push docker image
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
@@ -104,6 +104,9 @@ jobs:
 
 
   update-releaes-artifacts:
+    permissions:
+      packages: write
+      contents: write # needed for push to release artifacts
     needs: [build-and-push]
     runs-on: ubuntu-latest
     steps:
