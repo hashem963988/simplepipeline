@@ -193,7 +193,7 @@ jobs:
 
 
   production:
-    needs: [test-docker-image]
+    needs: [ask-for-approval]
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     environment: production
