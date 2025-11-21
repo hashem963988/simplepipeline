@@ -41,7 +41,7 @@ jobs:
             echo '- ✅ Linting check is passed'
             echo ''
             echo "---"
-            echo '#### flake8 results (insights):'
+            echo '#### flake8 results (insights): 🔍'
             echo '```'
             echo "$(cat flake8_output.txt)"
             echo '```'
