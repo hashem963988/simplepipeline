@@ -77,6 +77,21 @@ jobs:
           docker buildx build --push -t ghcr.io/${{ github.repository }}:$TAG .
           docker buildx build --push -t ghcr.io/${{ github.repository }}:latest .
 
+          # add the latest image to the release artifacts:
+          if [ ${{ github.event_name }} == 'release' ]; then
+            docker pull ghcr.io/${{ github.repository }}:latest
+            docker save ghcr.io/${{ github.repository }}:latest -o image-latest.tar
+          fi
+      - name: upload docker image to release artifacts
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: image-latest.tar
+          asset_name: image-latest.tar
+          asset_content_type: application/octet-stream
+
+
       - name: show summary
         run: |
           {
