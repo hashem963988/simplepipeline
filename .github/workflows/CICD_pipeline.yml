@@ -79,7 +79,7 @@ jobs:
           # Get the short SHA of the commit
           SHORT_SHA=${GITHUB_SHA:0:7}
           if [ ${{ github.event_name }} != 'release' ]; then
-            docker buildx build --push -t ghcr.io/${{ github.repository }}:$SHORT_SHA
+            docker buildx build --push -t ghcr.io/${{ github.repository }}:$SHORT_SHA .
           else
             docker buildx build --push -t ghcr.io/${{ github.repository }}:$TAG .
             docker buildx build --push -t ghcr.io/${{ github.repository }}:latest .
@@ -146,7 +146,9 @@ jobs:
       
       - name: pull the image to create a container from it
         run: |
-          if [ ${{ github.event_name }} != 'release' ]; then
+          SHORT_SHA=${GITHUB_SHA:0:7}
+
+          if [ ${{ github.event_name }} != "release" ]; then
             docker pull ghcr.io/${{ github.repository }}:$SHORT_SHA
           else
             docker pull ghcr.io/${{ github.repository }}:$TAG
@@ -154,7 +156,9 @@ jobs:
 
       - name: run a container and apply a test command against it (remember CMD in the Dockerfile invokes the script at start)
         run: |
-          if [ ${{ github.event_name }} != 'release' ]; then
+          SHORT_SHA=${GITHUB_SHA:0:7}
+
+          if [ ${{ github.event_name }} != "release" ]; then
             docker run --rm ghcr.io/${{ github.repository }}:$SHORT_SHA | grep -i "hello" > test_results.txt || exit 1
           else
             docker run --rm ghcr.io/${{ github.repository }}:$TAG | grep -i "hello" > test_results.txt || exit 1
@@ -187,6 +191,7 @@ jobs:
 
   production:
     needs: [test-docker-image]
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     environment: production
     steps:
