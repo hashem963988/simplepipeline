@@ -121,6 +121,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - name: send notification to infrom that we need an approval to continue
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{"text":\"$(echo "project [simplepipeline $TAG] CI/CD pipeline needs to review before deploy to production 📢")\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
       - name: deploy
         run: echo "deploy to production...🚀"
 
