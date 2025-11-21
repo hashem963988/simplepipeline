@@ -125,4 +125,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: notification
-        run: echo send notification to slack
+        run: curl -X POST -H 'Content-type: application/json' --data "{"text":\"$(echo "deploy is completed")\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
