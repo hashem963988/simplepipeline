@@ -111,6 +111,7 @@ jobs:
     needs: [build-and-push]
     permissions:
       packages: read
+      contents: write # needed for push to release artifacts
     runs-on: ubuntu-latest
     steps:
       - name: login to Docker registry
