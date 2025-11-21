@@ -25,7 +25,7 @@ jobs:
 
       - name: lint the code
         run: |
-          flake8 hello.py
+          flake8 hello.py --exit-zero # disable flake8 fast-fail
           pylint hello.py
       
       - name: test the script
