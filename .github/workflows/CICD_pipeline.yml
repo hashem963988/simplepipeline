@@ -55,7 +55,7 @@ jobs:
     needs: [lint-and-test]
     permissions:
       packages: write
-      contents: read
+      contents: write # needed for push to release artifacts
     name: build and push docker image
     runs-on: ubuntu-latest
     steps:
@@ -111,7 +111,7 @@ jobs:
     needs: [build-and-push]
     permissions:
       packages: read
-      contents: write # needed for push to release artifacts
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: login to Docker registry
