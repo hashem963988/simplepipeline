@@ -64,9 +64,8 @@ jobs:
 
       - name: build and push
         run: |
-          docker buildx build -t ghcr.io/${{ github.repository }}:latest .
-          docker push ghcr.io/${{ github.repository }}:latest
-          docker rmi ghcr.io/${{ github.repository }}:latest
+          docker buildx build --push -t ghcr.io/${{ github.repository }}:latest .
+
 
 
   test-docker-image:
