@@ -36,12 +36,12 @@ jobs:
       - name: summary
         run: |
           {
-            echo '## Summary 📈'
+            echo '## Code Linting Summary 📈'
             echo ''
             echo '- ✅ Linting check is passed'
             echo ''
             echo "---"
-            echo 'flake8 results:'
+            echo 'flake8 results (insights):'
             echo '```'
             echo "$(cat flake8_output.txt)"
             echo '```'
@@ -75,7 +75,7 @@ jobs:
       - name: summary
         run: |
           {
-            echo '## Summary 📈'
+            echo '## Docker Build Summary 📈'
             echo ''
             echo 'To pull the docker image use:'
             echo "docker pull ghcr.io/${{ github.repository }}:latest"
