@@ -126,4 +126,4 @@ jobs:
     steps:
       - name: notification
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{"text":\"$(echo "deployed to production 🚀")\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+          curl -X POST -H 'Content-type: application/json' --data "{"text":\"$(echo "project (simplepipeline) has been deployed to production 🚀")\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
