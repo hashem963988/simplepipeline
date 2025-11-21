@@ -59,7 +59,7 @@ jobs:
           context: .
           push: true
           platforms: amd64, arm64
-          tags: ["latest"]
+          tags: "latest"
 
 
   test-docker-image:
