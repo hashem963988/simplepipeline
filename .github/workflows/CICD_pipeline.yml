@@ -146,6 +146,8 @@ jobs:
       
       - name: pull the image to create a container from it
         run: |
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          
           if [ ${{ github.event_name }} != "release" ]; then
             docker pull ghcr.io/${{ github.repository }}:$SHORT_SHA
           else
