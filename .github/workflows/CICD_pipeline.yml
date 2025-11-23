@@ -115,16 +115,15 @@ jobs:
   update-releaes-artifacts:
     needs: [build-and-push]
     runs-on: ubuntu-latest
+    if: github.event_name == 'release'
     steps:
       - name: get the image tar file from the cache
-        if: github.event_name == 'release'
         uses: actions/cache@v4
         with:
           path: ./docker-image-${{ github.event.release.tag_name }}.tar
           key: ${{ runner.os }}-cache-${{ github.sha }}
 
       - name: upload docker image to release artifacts
-        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v1
         with:
           files: docker-image-${{ github.event.release.tag_name }}.tar
