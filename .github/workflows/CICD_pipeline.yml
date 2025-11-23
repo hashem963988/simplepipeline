@@ -34,7 +34,7 @@ jobs:
 
       - name: lint the code
         run: |
-          flake8 hello.py --exit-zero >> flake8_output.txt
+          flake8 hello.py > flake8_output.txt
           pylint hello.py
         continue-on-error: true
       
