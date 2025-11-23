@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - dev
-      - release/v*
+      - dev # for developer teams staging (auto deployment to the staging environment)
+      - release/v* # in case we want to modify a release branch (rarely used)
   release:
-    types: [created]
+    types: [created] # for production after creating a release with a new tag (we approved the state of app in the staging environment)
   workflow_dispatch:
 
 permissions:
