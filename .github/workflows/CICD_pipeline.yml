@@ -40,6 +40,7 @@ jobs:
       
       - name: test the script
         # the output of the script should returns "Hello, World!" so we can grep it to check
+        # this should be replaced with real automation testing (QA teams should write the test files)
         run: python hello.py | grep -i "hello" || exit 1
 
       - name: show summary
@@ -48,6 +49,7 @@ jobs:
             echo '## Code Linting Summary 📈'
             echo ''
             echo '- ✅ Linting check is passed'
+            echo '- ✅ Automated testing is passed'
             echo ''
             echo '#### flake8 results (insights): 🔍'
             echo '```'
