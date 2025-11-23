@@ -184,6 +184,7 @@ jobs:
     needs: [test-docker-image]
     runs-on: ubuntu-latest
     environment: staging
+    if: github.event_name != 'release'
     steps:
       - name: deploy
         run: |
