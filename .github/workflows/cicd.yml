@@ -1,0 +1,212 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev # for developer teams staging (auto deployment to the staging environment)
+      - release/v* # in case we want to modify a release branch (rarely used)
+  release:
+    types: [created] # for production after creating a release with a new tag (we approved the state of app in the staging environment)
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: write
+
+env:
+  GITHUB_SHA: ${{ github.sha }} # full sha (in case of push to dev or release)
+  TAG: ${{ github.event.release.tag_name }} # tag (in case of release only)
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: install python requirements
+        run: pip install flake8 pylint
+
+      - name: lint the code
+        run: |
+          flake8 hello.py > flake8_output.txt
+          pylint hello.py
+        continue-on-error: true
+      
+      - name: test the script
+        # the output of the script should returns "Hello, World!" so we can grep it to check
+        # this should be replaced with real automation testing (QA teams should write the test files)
+        run: python hello.py | grep -i "hello" || exit 1
+
+      - name: show summary
+        run: |
+          {
+            echo '## Code Linting Summary 📈'
+            echo ''
+            echo '- ✅ Linting check is passed'
+            echo '- ✅ Automated testing is passed'
+            echo ''
+            echo '#### flake8 results (insights): 🔍'
+            echo '```'
+            echo "$(cat flake8_output.txt)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+  
+  build-and-push:
+    needs: [lint-and-test]
+    name: build/push docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: setup docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: login to docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          # password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.PAT }}
+
+      - name: build and push
+        run: |
+          # Get the short SHA of the commit
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          if [ ${{ github.event_name }} != 'release' ]; then
+            docker buildx build --push -t ghcr.io/${{ github.repository }}:$SHORT_SHA .
+          else
+            docker buildx build --push -t ghcr.io/${{ github.repository }}:$TAG .
+            docker buildx build --push -t ghcr.io/${{ github.repository }}:latest .
+            # add the latest image to the release artifacts:
+            # create the tar file of the image
+            docker pull ghcr.io/${{ github.repository }}:$TAG
+            docker save ghcr.io/${{ github.repository }}:$TAG -o docker-image-$TAG.tar
+          fi
+
+      - name: cache docker image tar file for the next job
+        if: github.event_name == 'release'
+        uses: actions/cache@v4
+        with:
+          path: ./docker-image-${{ github.event.release.tag_name }}.tar
+          key: ${{ runner.os }}-cache-${{ github.sha }}
+
+      - name: show summary
+        run: |
+          {
+            echo "## Docker Build Summary $TAG 🚢"
+            echo ''
+            echo '- ✅ Docker image building & pushing is passed'
+            echo ''
+            echo '#### To pull the docker image use:'
+            echo '```bash'
+            echo "docker pull ghcr.io/${{ github.repository }}:latest"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
+  update-releaes-artifacts:
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - name: get the image tar file from the cache
+        uses: actions/cache@v4
+        with:
+          path: ./docker-image-${{ github.event.release.tag_name }}.tar
+          key: ${{ runner.os }}-cache-${{ github.sha }}
+
+      - name: upload docker image to release artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          files: docker-image-${{ github.event.release.tag_name }}.tar
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+
+
+
+  test-docker-image:
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    steps:
+      - name: login to Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          # password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.PAT }}
+      
+      - name: pull the image to create a container from it
+        run: |
+          if [ ${{ github.event_name }} != "release" ]; then
+            SHORT_SHA=${GITHUB_SHA:0:7}
+            docker pull ghcr.io/${{ github.repository }}:$SHORT_SHA
+          else
+            docker pull ghcr.io/${{ github.repository }}:$TAG
+          fi
+
+      - name: run a container and apply a test command against it (remember CMD in the Dockerfile invokes the script at start)
+        run: |
+          if [ ${{ github.event_name }} != "release" ]; then
+            SHORT_SHA=${GITHUB_SHA:0:7}
+            docker run --rm ghcr.io/${{ github.repository }}:$SHORT_SHA | grep -i "hello" > test_results.txt || exit 1
+          else
+            docker run --rm ghcr.io/${{ github.repository }}:$TAG | grep -i "hello" > test_results.txt || exit 1
+          fi
+
+      - name: artifacting test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_results
+          path: test_results.txt
+
+  ask-for-approval:
+    needs: [test-docker-image]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: send notification to infrom that we need an approval to continue
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{"text":\"$(echo "project [simplepipeline $TAG] CI/CD pipeline needs to review before deploy to production 📢")\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  staging:
+    needs: [test-docker-image]
+    runs-on: ubuntu-latest
+    environment: staging
+    if: github.event_name != 'release'
+    steps:
+      - name: deploy
+        run: |
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          echo "deploy $SHORT_SHA to staging...🚀"
+
+
+  production:
+    needs: [ask-for-approval]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: deploy
+        run: echo "deploy $TAG to production...🚀"
+
+  notification:
+    needs: [production]
+    runs-on: ubuntu-latest
+    steps:
+      - name: notification
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{"text":\"$(echo "project [simplepipeline $TAG] has been deployed to production 🚀")\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
