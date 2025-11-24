@@ -3,6 +3,9 @@ on:
   pull_request:
     types: [closed]
 
+permissions:
+  contents: write
+
 jobs:
   delete-branch:
     if: github.event.pull_request.merged == true
@@ -11,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           fetch-depth: 0
 
       - name: Delete merged branch
