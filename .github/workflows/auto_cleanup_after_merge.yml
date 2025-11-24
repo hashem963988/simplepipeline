@@ -1,4 +1,4 @@
-name: Cleanup merged branches
+name: Cleanup merged branches # after successful PR merge
 on:
   pull_request:
     types: [closed]
@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete branch
-        run: |
-          if [[ ${{ github.event.pull_request.head.repo.full_name }} == ${{ github.repository }} ]]; then
-            git push origin --delete ${{ github.event.pull_request.head.ref }}
-          fi
+        uses: SvanBoxel/delete-merged-branch@v1
+        with:
+          delete_closed_pr_branch: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
