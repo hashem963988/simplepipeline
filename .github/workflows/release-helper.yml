@@ -14,4 +14,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           trigger: 'tag'
           changelogs: 'CHANGELOG.en-US.md'
-          branch: 'master'
+          branch: 'main'
