@@ -1,7 +1,7 @@
-![Static Badge](https://img.shields.io/badge/CI%2FCD-%F0%9F%92%99%20Done-green)
+[![Static Badge](https://img.shields.io/badge/CI%2FCD-%F0%9F%92%99%20Done-green)](https://google.com)
 ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=http%3A%2F%2F157.241.132.209%3A8060&query=status&label=Production%20Status&color=green&cacheSeconds=10)
 
-[![Google Logo](https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png)](https://www.google.com)
+
 
 
 # simplepipeline
